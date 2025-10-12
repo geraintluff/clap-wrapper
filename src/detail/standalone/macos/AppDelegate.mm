@@ -35,6 +35,21 @@
     auto *plugin = freeaudio::clap_wrapper::standalone::getMainPlugin()->_plugin;
     plugin->on_main_thread(plugin);
   }
+
+  if (standaloneHost->restartRequested.exchange(false))
+  {
+    // manually set running to false to make clapProcess a no-op
+    // while the plugin is being reactivated. otherwise,
+    // stopping and starting the entire audio engine is probably
+    // overkill.
+    {
+      ClapWrapper::detail::shared::SpinLockGuard g(standaloneHost->processLock);
+      standaloneHost->running = false;
+    }
+    standaloneHost->activatePlugin(standaloneHost->currentSampleRate, 1,
+                                   standaloneHost->currentBufferSize * 2);
+    standaloneHost->running = true;
+  }
 }
 
 - (void)doSetup

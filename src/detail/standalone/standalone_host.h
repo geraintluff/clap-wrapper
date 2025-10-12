@@ -26,6 +26,7 @@
 
 #include "clap_proxy.h"
 #include "detail/shared/fixedqueue.h"
+#include "detail/shared/spinlock.h"
 
 namespace freeaudio::clap_wrapper::standalone
 {
@@ -111,9 +112,10 @@ struct StandaloneHost : Clap::IHost
   {
     TRACE;
   }
+  std::atomic<bool> restartRequested{false};
   void restartPlugin() override
   {
-    TRACE;
+    restartRequested = true;
   }
   std::atomic<bool> callbackRequested{false};
   void request_callback() override
@@ -286,6 +288,7 @@ struct StandaloneHost : Clap::IHost
   clap_input_events inputEvents{};
   clap_output_events outputEvents{};
 
+  ClapWrapper::detail::shared::SpinLock processLock;
   std::atomic<bool> running{true}, finishedRunning{false};
 
   // We need to have play buffers for the clap. For now lets assume
