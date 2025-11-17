@@ -76,7 +76,7 @@ function(make_clapfirst_plugins)
         set(C1ST_PLUGIN_FORMATS CLAP VST3 AUV2)
     endif()
 
-    if (EMSCRIPTEN)
+    if (EMSCRIPTEN OR (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "wasm32") OR (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "wasm64"))
         set(BUILD_CLAP -1)
         set(BUILD_VST3 -1)
         set(BUILD_AUV2 -1)
@@ -230,9 +230,11 @@ function(make_clapfirst_plugins)
         endif()
 
 	# Emscripten flags
-	target_compile_options(${C1ST_IMPL_TARGET} PUBLIC -msimd128 --no-entry)
-	target_compile_options(${WCLAP_TARGET} PUBLIC -msimd128 --no-entry)
-	target_link_options(${WCLAP_TARGET} PUBLIC -msimd128 -sSTANDALONE_WASM --no-entry -sEXPORTED_FUNCTIONS=_clap_entry,_malloc -sINITIAL_MEMORY=512kb -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sPURE_WASI --export-table)
+        if (EMSCRIPTEN)
+            target_compile_options(${C1ST_IMPL_TARGET} PUBLIC -msimd128 --no-entry)
+            target_compile_options(${WCLAP_TARGET} PUBLIC -msimd128 --no-entry)
+            target_link_options(${WCLAP_TARGET} PUBLIC -msimd128 -sSTANDALONE_WASM --no-entry -sEXPORTED_FUNCTIONS=_clap_entry,_malloc -sINITIAL_MEMORY=512kb -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sPURE_WASI --export-table)
+        endif()
 
         add_dependencies(${ALL_TARGET} ${WCLAP_TARGET})
     endif()

@@ -1,4 +1,4 @@
-# This adds a WCLAP target, but must only be called when using Emscripten's toolchain.
+# This adds a WCLAP target, but must only be called when building WASM (with Emscripten or WASI-SDK)
 
 function(target_add_wclap_configuration)
     set(oneValueArgs
@@ -8,8 +8,8 @@ function(target_add_wclap_configuration)
     )
     cmake_parse_arguments(TCLP "" "${oneValueArgs}" "" ${ARGN} )
 
-    if (NOT EMSCRIPTEN)
-        message(FATAL_ERROR "Do not call this outside the Emscripten toolchain")
+    if (NOT EMSCRIPTEN AND (NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "wasm32") AND (NOT ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "wasm64"))
+        message(FATAL_ERROR "Do not call this outside the Emscripten/WASI toolchain")
     endif()
 
     if (NOT DEFINED TCLP_TARGET)
