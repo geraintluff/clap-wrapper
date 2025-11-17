@@ -229,14 +229,14 @@ function(make_clapfirst_plugins)
             endif()
         endif()
 
-	# Emscripten flags
         if (EMSCRIPTEN)
             target_compile_options(${C1ST_IMPL_TARGET} PUBLIC -msimd128 --no-entry)
             target_compile_options(${WCLAP_TARGET} PUBLIC -msimd128 --no-entry)
             target_link_options(${WCLAP_TARGET} PUBLIC -msimd128 -sSTANDALONE_WASM --no-entry -sEXPORTED_FUNCTIONS=_clap_entry,_malloc -sINITIAL_MEMORY=512kb -sALLOW_MEMORY_GROWTH=1 -sALLOW_TABLE_GROWTH=1 -sPURE_WASI --export-table)
         else()
-            add_compile_options(-fno-exceptions)
-            target_link_options(${WCLAP_TARGET} PUBLIC -mexec-model=reactor -Wl,--export-memory,--export-table,--growable-table,--export=malloc,--export=clap_entry)
+            target_compile_options(${C1ST_IMPL_TARGET} PUBLIC -msimd128 -fno-exceptions)
+            target_compile_options(${WCLAP_TARGET} PUBLIC -msimd128 -fno-exceptions)
+            target_link_options(${WCLAP_TARGET} PUBLIC -mexec-model=reactor -Wl,--initial-heap=524288,--export-table,--growable-table,--export=malloc,--export=clap_entry)
         endif()
 
         add_dependencies(${ALL_TARGET} ${WCLAP_TARGET})
